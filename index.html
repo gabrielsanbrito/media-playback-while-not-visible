@@ -16,11 +16,36 @@
     </p>
     <ol>
       <li>
-        Click on the "Play" button to start playing media. Both the
-        HTML Media Element and the Web Audio case should produce sound.
+        If not already playing, click on the "Play" button to start playing
+        media. Both the HTML Media Element and the Web Audio case should produce
+        sound.
       </li>
       <li>
-        Press on the corresponding "Hide" 
+        Select the type of visibility control to use and press on the
+        corresponding "Hide" button.
+      </li>
+      <li>
+        Notice how in both cases the audio stops playing.
+        <ol type="a">
+          <li>The media element becomes "paused".</li>
+          <li>The AudioContext becomes "interrupted".</li>
+        </ol>
+      </li>
+      <li>
+        Also notice that, while hidden, pressing on the "Play" button has no
+        effect. Attempting to play in this situation will:
+        <ol type="a">
+          <li>Make media elements throw a NotAllowed exception.</li>
+          <li>Make AudioContexts throw a InvalidStateError exception.</li>
+        </ol>
+      </li>
+      <li>
+        Press on the "Show" button to make the media element and AudioContext
+        visible again.
+      </li>
+      <li>
+        The AudioContext should be resumed automatically, and pressing on the
+        "Play" button for the media element should also resume playback.
       </li>
     </ol>
     <h2>HTML Media Element</h2>
@@ -35,7 +60,7 @@
         <option value="display">display: none</option>
       </select>
     </div>
-    <p id="mediaelement-state">MediaElement state: <p>
+    <p id="mediaelement-state">Media element state: <p>
     <h2>Web Audio AudioContext</h2>
     <div>
       <iframe id="audiocontext-iframe" allow="media-playback-while-not-visible 'none'" src="audiocontext_iframe.html" width="400" height="200"></iframe>
@@ -58,19 +83,21 @@
       const HIDE_TYPE_VISIBILITY = 'visibility';
       const HIDE_TYPE_DISPLAY = 'display';
 
+      const audiocontextPlayButtonId = 'audiocontext-play';
+      const audiocontextHideButtonId = 'audiocontext-hide';
+      const audiocontextHideTypeId = 'audiocontext-hide-type';
 
-      // const audiocontext_play_btn = document.getElementById('audiocontext-play');
-      // const audiocontext_hide_btn = document.getElementById('audiocontext-hide');
-      // const audiocontext_hide_type = document.getElementById('audiocontext-hide-type');
+      const mediaelementPlayButtonId = 'mediaelement-play';
+      const mediaelementHideButtonId = 'mediaelement-hide';
+      const mediaelementHideTypeId = 'mediaelement-hide-type';
 
       function setupPlaybackButtonEventListener(iframe, button) {
         button.addEventListener('click', () => {
+          // The button text will set after we get the state from the iframe.
           if (button.innerText === PLAY) {
             iframe.postMessage('play', '*');
-            button.innerText = PAUSE;
           } else {
             iframe.postMessage('pause', '*');
-            button.innerText = PLAY;
           }
         });
       }
@@ -103,18 +130,18 @@
 
       function setupButtonEventListenersForAudioContextIframe(iframe_id) {
         const iframe = document.getElementById(iframe_id);
-        const audiocontext_play_btn = document.getElementById('audiocontext-play');
-        const audiocontext_hide_btn = document.getElementById('audiocontext-hide');
-        const audiocontext_hide_type = document.getElementById('audiocontext-hide-type');
+        const audiocontext_play_btn = document.getElementById(audiocontextPlayButtonId);
+        const audiocontext_hide_btn = document.getElementById(audiocontextHideButtonId);
+        const audiocontext_hide_type = document.getElementById(audiocontextHideTypeId);
         setupPlaybackButtonEventListener(iframe.contentWindow, audiocontext_play_btn);
         setupVisibilityControls(iframe, audiocontext_hide_btn, audiocontext_hide_type);
       }
 
       function setupButtonEventListenersForMediaElementIframe(iframe_id) {
         const iframe = document.getElementById(iframe_id);
-        const mediaelement_play_btn = document.getElementById('mediaelement-play');
-        const mediaelement_hide_btn = document.getElementById('mediaelement-hide');
-        const mediaelement_hide_type = document.getElementById('mediaelement-hide-type');
+        const mediaelement_play_btn = document.getElementById(mediaelementPlayButtonId);
+        const mediaelement_hide_btn = document.getElementById(mediaelementHideButtonId);
+        const mediaelement_hide_type = document.getElementById(mediaelementHideTypeId);
         setupPlaybackButtonEventListener(iframe.contentWindow, mediaelement_play_btn);
         setupVisibilityControls(iframe, mediaelement_hide_btn, mediaelement_hide_type);
       }
@@ -128,43 +155,6 @@
         }
       };
 
-      // Setup event listeners for the buttons.
-      // audiocontext_play_btn.addEventListener('click', () => {
-      //   const iframe = document.getElementById('audiocontext-iframe').contentWindow;
-      //   if (audiocontext_play_btn.innerText === PLAY) {
-      //     iframe.postMessage('play', '*');
-      //     audiocontext_play_btn.innerText = PAUSE;
-      //   } else {
-      //     iframe.postMessage('pause', '*');
-      //     audiocontext_play_btn.innerText = PLAY;
-      //   }
-      // });
-
-      // audiocontext_hide_btn.addEventListener('click', () => {
-      //   const iframe = document.getElementById('audiocontext-iframe');
-      //   if (audiocontext_hide_btn.innerText === HIDE) {
-      //     const hideType = audiocontext_hide_type.value;
-      //     if (hideType === HIDE_TYPE_VISIBILITY) {
-      //       iframe.style.visibility = 'hidden';
-      //     } else if (hideType === HIDE_TYPE_DISPLAY) {
-      //       iframe.style.display = 'none';
-      //     }
-      //     audiocontext_hide_type.disabled = true;
-      //     audiocontext_hide_btn.innerText = SHOW;
-      //     audiocontext_play_btn.disabled = true;
-      //   } else {
-      //     const hideType = audiocontext_hide_type.value;
-      //     if (hideType === HIDE_TYPE_VISIBILITY) {
-      //       iframe.style.visibility = 'visible';
-      //     } else if (hideType === HIDE_TYPE_DISPLAY) {
-      //       iframe.style.display = 'block';
-      //     }
-      //     audiocontext_hide_type.disabled = false;
-      //     audiocontext_hide_btn.innerText = HIDE;
-      //     audiocontext_play_btn.disabled = false;
-      //   }
-      // });
-
       setupButtonEventListenersForMediaElementIframe('mediaelement-iframe');
       setupButtonEventListenersForAudioContextIframe('audiocontext-iframe');
 
@@ -173,11 +163,11 @@
        if (event.data.player_type === 'audiocontext') {
          const audiocontext_state = document.getElementById('audiocontext-state');
          audiocontext_state.innerText = `AudioContext state: ${event.data.state}`;
-         //updatePlaybackButtonTextIfNeeded('audiocontext-play', event.data.state);
+         updatePlaybackButtonTextIfNeeded('audiocontext-play', event.data.state);
        } else if (event.data.player_type === 'mediaelement') {
          const mediaelement_state = document.getElementById('mediaelement-state');
-         mediaelement_state.innerText = `MediaElement state: ${event.data.state}`;
-         //updatePlaybackButtonTextIfNeeded('mediaelement-play', event.data.state);
+         mediaelement_state.innerText = `Media element state: ${event.data.state}`;
+         updatePlaybackButtonTextIfNeeded('mediaelement-play', event.data.state);
        }
       });
     </script>
