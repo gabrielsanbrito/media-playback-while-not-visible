@@ -114,7 +114,6 @@
             }
             hideTypeSelect.disabled = true;
             hideButton.innerText = SHOW;
-            audiocontext_play_btn.disabled = true;
           } else {
             const hideType = hideTypeSelect.value;
             if (hideType === HIDE_TYPE_VISIBILITY) {
@@ -124,7 +123,6 @@
             }
             hideTypeSelect.disabled = false;
             hideButton.innerText = HIDE;
-            audiocontext_play_btn.disabled = false;
           }
         });
       }
