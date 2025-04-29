@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>
+      WebAudio Oscillator Iframe
+    </title>
+  </head>
+  <body>
+    <script>
+      window.addEventListener('message', (event) => {
+        if (event.data === 'play') {
+          console.log('Iframe: resume AudioContext');
+          audioCtx.resume();
+        } else if (event.data === 'pause') {
+          console.log('Iframe: suspend AudioContext');
+          audioCtx.suspend();
+        }
+      });
+
+      let audioCtx = new AudioContext();
+      audioCtx.addEventListener('statechange', () => {
+        console.log(`Iframe: state changed to ${audioCtx.state}`);
+
+        // Send the state of the AudioContext to the parent window.
+        //window.parent.postMessage(audioCtx.state, '*');
+        window.parent.postMessage({
+          'player_type': 'audiocontext',
+          'state': audioCtx.state
+        }, '*');
+      });
+
+      audioCtx.resume();
+      const oscillator = audioCtx.createOscillator();
+      oscillator.connect(audioCtx.destination);
+      oscillator.start();
+      audioCtx.suspend();
+    </script>
+  </body>

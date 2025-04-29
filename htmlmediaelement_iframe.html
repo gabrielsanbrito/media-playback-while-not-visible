@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Media Element Iframe</title>
+  <body>
+    <video id="video" width="400" height="200" controls autoplay>
+      <source src="resources/test_bear.mp4" type="video/mp4">
+    
+      <script>
+        // Listen for messages from the parent window.
+        window.addEventListener('message', (event) => {
+          if (event.data === 'play') {
+            console.log('Iframe: play video');
+            document.getElementById('video').play();
+          } else if (event.data === 'pause') {
+            console.log('Iframe: pause video');
+            document.getElementById('video').pause();
+          }
+        });
+    
+        // Send a message to the parent window when the video is playing.
+        document.getElementById('video').addEventListener('play', () => {
+          console.log('Iframe: video is playing');
+          window.parent.postMessage({ player_type: 'mediaelement', state: 'playing' }, '*');
+        });
+        // Send a message to the parent window when the video is paused.
+        document.getElementById('video').addEventListener('pause', () => {
+          console.log('Iframe: video is paused');
+          window.parent.postMessage({ player_type: 'mediaelement', state: 'paused' }, '*');
+        });
+      </script>
+    </body>
+</html>
