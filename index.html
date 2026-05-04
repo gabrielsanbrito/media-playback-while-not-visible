@@ -59,6 +59,7 @@
       <select id="mediaelement-hide-type">
         <option value="visibility">visibility: hidden</option>
         <option value="display">display: none</option>
+        <option value="size">height: 0; width: 0</option>
       </select>
     </div>
     <p id="mediaelement-state">Media element state: <p>
@@ -72,6 +73,7 @@
       <select id="audiocontext-hide-type">
         <option value="visibility">visibility: hidden</option>
         <option value="display">display: none</option>
+        <option value="size">height: 0; width: 0</option>
       </select>
     </div>
     <p id="audiocontext-state">AudioContext state: <p>
@@ -83,6 +85,7 @@
       const HIDE = 'Hide';
       const HIDE_TYPE_VISIBILITY = 'visibility';
       const HIDE_TYPE_DISPLAY = 'display';
+      const HIDE_TYPE_SIZE = 'size';
 
       const audiocontextPlayButtonId = 'audiocontext-play';
       const audiocontextHideButtonId = 'audiocontext-hide';
@@ -104,6 +107,8 @@
       }
 
       function setupVisibilityControls(iframe, hideButton, hideTypeSelect) {
+        const originalWidth = iframe.width;
+        const originalHeight = iframe.height;
         hideButton.addEventListener('click', () => {
           if (hideButton.innerText === HIDE) {
             const hideType = hideTypeSelect.value;
@@ -111,6 +116,9 @@
               iframe.style.visibility = 'hidden';
             } else if (hideType === HIDE_TYPE_DISPLAY) {
               iframe.style.display = 'none';
+            } else if (hideType === HIDE_TYPE_SIZE) {
+              iframe.width = 0;
+              iframe.height = 0;
             }
             hideTypeSelect.disabled = true;
             hideButton.innerText = SHOW;
@@ -120,6 +128,9 @@
               iframe.style.visibility = 'visible';
             } else if (hideType === HIDE_TYPE_DISPLAY) {
               iframe.style.display = 'block';
+            } else if (hideType === HIDE_TYPE_SIZE) {
+              iframe.width = originalWidth;
+              iframe.height = originalHeight;
             }
             hideTypeSelect.disabled = false;
             hideButton.innerText = HIDE;
