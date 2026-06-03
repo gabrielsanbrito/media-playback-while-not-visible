@@ -63,6 +63,19 @@
       </select>
     </div>
     <p id="mediaelement-state">Media element state: <p>
+    <h2>HTML Media Element (cross-origin)</h2>
+    <div>
+      <iframe id="mediaelement-crossorigin-iframe" allow="media-playback-while-not-visible 'none'" src="https://stevebeckermsft.github.io/repro_pages/media/autoplay" width="400" height="200"></iframe>
+    </div>
+    <div>
+      <button id="mediaelement-crossorigin-hide">Hide</button>
+      <select id="mediaelement-crossorigin-hide-type">
+        <option value="visibility">visibility: hidden</option>
+        <option value="display">display: none</option>
+        <option value="size">height: 0; width: 0</option>
+      </select>
+    </div>
+    <p id="mediaelement-crossorigin-state">Media element (cross-origin) state: <p>
     <h2>Web Audio AudioContext</h2>
     <div>
       <iframe id="audiocontext-iframe" allow="media-playback-while-not-visible 'none'" src="audiocontext_iframe.html" width="400" height="200"></iframe>
@@ -94,6 +107,9 @@
       const mediaelementPlayButtonId = 'mediaelement-play';
       const mediaelementHideButtonId = 'mediaelement-hide';
       const mediaelementHideTypeId = 'mediaelement-hide-type';
+
+      const mediaelementCrossoriginHideButtonId = 'mediaelement-crossorigin-hide';
+      const mediaelementCrossoriginHideTypeId = 'mediaelement-crossorigin-hide-type';
 
       function setupPlaybackButtonEventListener(iframe, button) {
         button.addEventListener('click', () => {
@@ -156,6 +172,13 @@
         setupVisibilityControls(iframe, mediaelement_hide_btn, mediaelement_hide_type);
       }
 
+      function setupButtonEventListenersForCrossOriginMediaElementIframe(iframe_id) {
+        const iframe = document.getElementById(iframe_id);
+        const hide_btn = document.getElementById(mediaelementCrossoriginHideButtonId);
+        const hide_type = document.getElementById(mediaelementCrossoriginHideTypeId);
+        setupVisibilityControls(iframe, hide_btn, hide_type);
+      }
+
       function updatePlaybackButtonTextIfNeeded(buttonId, newState) {
         const button = document.getElementById(buttonId);
         if (button.innerText === PLAY && (newState === 'playing' || newState === 'running')) {
@@ -166,6 +189,7 @@
       };
 
       setupButtonEventListenersForMediaElementIframe('mediaelement-iframe');
+      setupButtonEventListenersForCrossOriginMediaElementIframe('mediaelement-crossorigin-iframe');
       setupButtonEventListenersForAudioContextIframe('audiocontext-iframe');
 
       window.addEventListener('message', (event) => {
@@ -175,9 +199,15 @@
          audiocontext_state.innerText = `AudioContext state: ${event.data.state}`;
          updatePlaybackButtonTextIfNeeded('audiocontext-play', event.data.state);
        } else if (event.data.player_type === 'mediaelement') {
-         const mediaelement_state = document.getElementById('mediaelement-state');
-         mediaelement_state.innerText = `Media element state: ${event.data.state}`;
-         updatePlaybackButtonTextIfNeeded('mediaelement-play', event.data.state);
+         if (event.origin === window.origin) {
+           const mediaelement_state = document.getElementById('mediaelement-state');
+           mediaelement_state.innerText = `Media element state: ${event.data.state}`;
+           updatePlaybackButtonTextIfNeeded('mediaelement-play', event.data.state);
+         } else {
+           const crossorigin_state = document.getElementById('mediaelement-crossorigin-state');
+           crossorigin_state.innerText = `Media element (cross-origin) state: ${event.data.state}`;
+           // No play button to update for cross-origin iframe.
+         }
        }
       });
     </script>
